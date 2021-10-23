@@ -15,6 +15,10 @@ author:
     name: Jeffrey Yasskin
     organization: Google
     email: jyasskin@chromium.org
+ -
+    name: Felipe Erias
+    organization: Igalia
+    email: felipeerias@igalia.com
 
 informative:
   ISO28500:
