@@ -1,0 +1,98 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2021-10-24T00:40:57.158231+00:00",
+  "repo": "wpack-wg/use-cases",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [
+    {
+      "number": 2,
+      "id": "I_kwDOGQepIc49ogsf",
+      "title": "Move the more controversial use cases to an appendix.",
+      "url": "https://github.com/wpack-wg/use-cases/issues/2",
+      "state": "OPEN",
+      "author": "jyasskin",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "As agreed before the I-D was adopted.",
+      "createdAt": "2021-10-23T00:46:02Z",
+      "updatedAt": "2021-10-23T00:46:02Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOGQepIc4tkodW",
+      "title": "Add Felipe to the editors.",
+      "url": "https://github.com/wpack-wg/use-cases/pull/1",
+      "state": "OPEN",
+      "author": "jyasskin",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "@felipeerias, did I get your metadata right? The fields are defined at https://github.com/cabo/kramdown-rfc2629#the-yaml-header, which fills in https://datatracker.ietf.org/doc/html/rfc7991#section-2.7.",
+      "createdAt": "2021-10-23T00:41:49Z",
+      "updatedAt": "2021-10-23T00:41:50Z",
+      "baseRepository": "wpack-wg/use-cases",
+      "baseRefName": "main",
+      "baseRefOid": "807dd666d8ffda164e4b7547c54c33d757fc2079",
+      "headRepository": "wpack-wg/use-cases",
+      "headRefName": "add-felipe",
+      "headRefOid": "a7188bcaec63e3e43dca75dc85510de880939855",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    }
+  ]
+}
