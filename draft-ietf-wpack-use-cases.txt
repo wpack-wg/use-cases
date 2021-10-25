@@ -4,8 +4,9 @@
 
 Network Working Group                                         J. Yasskin
 Internet-Draft                                                    Google
-Intended status: Informational                           23 October 2021
-Expires: 26 April 2022
+Intended status: Informational                                  F. Erias
+Expires: 28 April 2022                                            Igalia
+                                                         25 October 2021
 
 
               Use Cases and Requirements for Web Packages
@@ -42,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 26 April 2022.
+   This Internet-Draft will expire on 28 April 2022.
 
 Copyright Notice
 
@@ -119,7 +120,7 @@ Table of Contents
    6.  IANA Considerations
    7.  Informative References
    Appendix A.  Acknowledgements
-   Author's Address
+   Authors' Addresses
 
 1.  Introduction
 
@@ -1071,9 +1072,15 @@ Appendix A.  Acknowledgements
    Thanks to Yoav Weiss for the Subresource bundling use case and
    discussions about content distributors.
 
-Author's Address
+Authors' Addresses
 
    Jeffrey Yasskin
    Google
 
    Email: jyasskin@chromium.org
+
+
+   Felipe Erias
+   Igalia
+
+   Email: felipeerias@igalia.com
