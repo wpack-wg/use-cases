@@ -45,8 +45,8 @@ informative:
 
 --- abstract
 
-This document lists use cases for signing and/or bundling collections
-of web pages, and extracts a set of requirements from them.
+This document lists use cases for bundling together collections of web resources,
+and extracts a set of requirements from them.
 
 --- middle
 
@@ -76,11 +76,189 @@ listed, but they're not primary.
 
 # Use cases
 
-These use cases are in rough descending priority order. If use cases
-have conflicting requirements, the design should enable more important
-use cases.
+The initial use case that we want to focus on is {{bundling}}{:format="title"},
+as it will allow Web authors to serve different common scenarios while not needing
+a large number of requirements (and none with potential negative side effects
+on the Web platform).
 
-## Essential {#essential-use-cases}
+Other use cases that have been proposed are listed in the appendix, along with
+the additional requirements to support them.
+
+### Subresource bundling {#bundling}
+
+Text based subresources often benefit from improved compression ratios when
+bundled together.
+
+At the same time, the current practice of JS and CSS bundling, by compiling
+everything into a single JS file, also has negative side-effects:
+
+1. Dependent execution - in order to start executing *any* of the bundled
+   resources, it is required to download, parse and execute *all* of them.
+1. Loss of caching granularity - Modification of *any* of the resources results
+   in caching invalidation of *all* of them.
+1. Loss of module semantics - ES6 modules must be delivered as independent
+   resources. Therefore, current bundling methods, which deliver them with other
+   resources under a common URL, require transpilation to ES5 and result in loss
+   of ES6 module semantics.
+
+An on-the-fly readable packaging format, that will enable resources to maintain
+their own URLs while being physically delivered with other resources, can
+resolve the above downsides while keeping the upsides of improved compression
+ratios.
+
+To improve cache granularity, the client needs to tell the server which versions
+of which resources are already cached, which it could do with a Service Worker
+or perhaps with {{?I-D.ietf-httpbis-cache-digest}}.
+
+Associated requirements:
+
+* {{urls}}{:format="title"}
+* {{streamed-loading}}{:format="title"}: To solve downside 1.
+* {{transfer-compression}}{:format="title"}: To keep the upside.
+* {{response-headers}}{:format="title"}: At least the Content-Type is needed to
+  load JS and CSS.
+* {{unsigned-content}}{:format="title"}: Signing same-origin content wastes
+  space.
+* {{random-access}}{:format="title"}: To avoid needing a long linear scan before
+  using the content.
+
+# Requirements {#requirements}
+
+## Indexed by URL {#urls}
+
+Resources should be keyed by URLs, matching how browsers look
+resources up over HTTP.
+
+## Random access {#random-access}
+
+When a package is stored on disk, the browser can access
+arbitrary resources without a linear scan.
+
+{{MHTML}} would need to be extended with an index of the byte offsets of each
+contained resource.
+
+## Response headers {#response-headers}
+
+Resources should include their HTTP response headers, like
+`content-type`, `content-encoding`, `expires`,
+`content-security-policy`, etc.
+
+This requires an extension to {{ZIP}}: we'd need something like {{JAR}}'s
+`META-INF` directory to hold extra metadata beyond the resource's body.
+
+## Unsigned content {#unsigned-content}
+
+Alex can create their own package without a CA-signed
+certificate, and Bailey can view the content of the package.
+
+## Streamed loading {#streamed-loading}
+
+The browser can load a package as it downloads.
+
+This conflicts with ZIP, since ZIP's index is at the end.
+
+## Compress transfers {#transfer-compression}
+
+Transferring a package over the network takes as few bytes as possible. This is
+an easier problem than {{stored-compression}}{:format="title"} since it doesn't
+have to preserve {{random-access}}{:format="title"}.
+
+# Non-goals
+
+Some features often come along with packaging and signing, and it's
+important to explicitly note that they don't appear in the list of
+{{requirements}}{:format="title"}.
+
+## Store confidential data {#confidential}
+
+Packages are designed to hold public information and to be shared to
+people with whom the original publisher never has an interactive
+connection. In that situation, there's no way to keep the contents
+confidential: even if they were encrypted, to make the data public,
+anyone would have to be able to get the decryption key.
+
+It's possible to maintain something similar to confidentiality for
+non-public packaged data, but doing so complicates the format design
+and can give users a false sense of security.
+
+We believe we'll cause fewer privacy breaches if we omit any mechanism
+for encrypting data, than if we include something and try to teach
+people when it's unsafe to use.
+
+## Generate packages on the fly {#streamed-generation}
+
+See discussion at [WICG/webpackage#6](https://github.com/WICG/webpackage/issues/6#issuecomment-275746125).
+
+## Non-origin identity {#non-origin-identity}
+
+A package can be primarily identified as coming from something other
+than a
+[Web Origin](https://html.spec.whatwg.org/multipage/browsers.html#concept-origin).
+
+## DRM {#drm}
+
+Special support for blocking access to downloaded content based on
+licensing. Note that DRM systems can be shipped inside the package
+even if the packaging format doesn't specifically support them.
+
+## Ergonomic replacement for HTTP/2 PUSH {#push-replacement}
+
+HTTP/2 PUSH ({{?RFC7540}}, section 8.2) is hard for developers to configure, and
+an explicit package format might be easier. However, experts in this area
+believe we should focus on improving PUSH directly instead of routing around it
+with a bundling format.
+
+Trying to bundle resources in order to speed up page loads has a long history,
+including
+[Resource Packages](https://www.mnot.net/blog/2010/02/18/resource_packages) from
+2010 and
+the
+[W3C TAG's packaging proposal](https://w3ctag.github.io/packaging-on-the-web/)
+from 2015.
+
+However, the HTTPWG is doing a lot of work to let servers optimize the PUSHed
+data, and packaging would either have to re-do that or accept lower performance.
+For example:
+
+* {{?I-D.vkrasnov-h2-compression-dictionaries}} should allow individual small
+  resources to be compressed as well as they would be in a bundle.
+* {{?I-D.ietf-httpbis-cache-digest}} tells the server which resources it doesn't
+  need to PUSH.
+
+Associated requirements:
+
+* {{streamed-loading}}{:format="title"}: If the whole package has to be
+  downloaded before the browser can load a piece, this will definitely be slower
+  than PUSH.
+* {{transfer-compression}}{:format="title"}: Keep up with
+  {{?I-D.vkrasnov-h2-compression-dictionaries}}.
+* {{urls}}{:format="title"}: Resources on the web are addressed by URL.
+* {{request-headers}}{:format="title"}:
+  [PUSH_PROMISE](http://httpwg.org/specs/rfc7540.html#PUSH_PROMISE)
+  ({{?RFC7540}}, section 6.6) includes request headers.
+* {{response-headers}}{:format="title"}: PUSHed resources include their response
+  headers.
+
+# Security Considerations
+
+The security considerations will depend on the solution designed to satisfy the
+above requirements. See {{?I-D.yasskin-dispatch-web-packaging}} for one possible
+set of security considerations.
+
+# IANA Considerations
+
+This document has no actions for IANA.
+
+--- back
+
+# Acknowledgements
+
+Thanks to Yoav Weiss for the Subresource bundling use case and discussions about
+content distributors.
+
+# Appendix
+
+## Additional use cases
 
 ### Offline installation {#offline-installation}
 
@@ -225,8 +403,6 @@ Associated requirements:
   its publisher might want to provide and sign both WebP and PNG versions of an
   image, but the source site should be able to transfer only best one for each
   client.
-
-## Nice-to-have {#nice-to-have-use-cases}
 
 ### Packaged Web Publications {#uc-web-pub}
 
@@ -473,42 +649,6 @@ Associated requirements:
 
 * {{binary}}{:format="title"}
 
-### Subresource bundling {#bundling}
-
-Text based subresources often benefit from improved compression ratios when
-bundled together.
-
-At the same time, the current practice of JS and CSS bundling, by compiling
-everything into a single JS file, also has negative side-effects:
-
-1. Dependent execution - in order to start executing *any* of the bundled
-   resources, it is required to download, parse and execute *all* of them.
-1. Loss of caching granularity - Modification of *any* of the resources results
-   in caching invalidation of *all* of them.
-1. Loss of module semantics - ES6 modules must be delivered as independent
-   resources. Therefore, current bundling methods, which deliver them with other
-   resources under a common URL, require transpilation to ES5 and result in loss
-   of ES6 module semantics.
-
-An on-the-fly readable packaging format, that will enable resources to maintain
-their own URLs while being physically delivered with other resources, can
-resolve the above downsides while keeping the upsides of improved compression
-ratios.
-
-To improve cache granularity, the client needs to tell the server which versions
-of which resources are already cached, which it could do with a Service Worker
-or perhaps with {{?I-D.ietf-httpbis-cache-digest}}.
-
-Associated requirements:
-
-* {{urls}}{:format="title"}
-* {{streamed-loading}}{:format="title"}: To solve downside 1.
-* {{transfer-compression}}{:format="title"}: To keep the upside.
-* {{response-headers}}{:format="title"}: At least the Content-Type is needed to
-  load JS and CSS.
-* {{unsigned-content}}{:format="title"}: Signing same-origin content wastes
-  space.
-
 ### Archival {#archival}
 
 Existing formats like WARC ({{ISO28500}}) do a good job of accurately
@@ -533,14 +673,7 @@ Associated requirements:
 * {{unsigned-content}}{:format="title"}: To deal with expired signatures.
 * {{timeshifting}}{:format="title"}
 
-# Requirements {#requirements}
-
-## Essential {#essential-reqs}
-
-### Indexed by URL {#urls}
-
-Resources should be keyed by URLs, matching how browsers look
-resources up over HTTP.
+## Additional requirements
 
 ### Request headers {#request-headers}
 
@@ -555,15 +688,6 @@ with the same `content-location`.
 
 This also requires an extension to {{ZIP}}: we'd need to encode the request
 headers into ZIP's filename fields.
-
-### Response headers {#response-headers}
-
-Resources should include their HTTP response headers, like
-`content-type`, `content-encoding`, `expires`,
-`content-security-policy`, etc.
-
-This requires an extension to {{ZIP}}: we'd need something like {{JAR}}'s
-`META-INF` directory to hold extra metadata beyond the resource's body.
 
 ### Signing as an origin {#signing}
 
@@ -583,14 +707,6 @@ In any cryptographic system, the specification is responsible to make correct
 implementations easier to deploy than incorrect implementations
 ({{easy-implementation}}).
 
-### Random access {#random-access}
-
-When a package is stored on disk, the browser can access
-arbitrary resources without a linear scan.
-
-{{MHTML}} would need to be extended with an index of the byte offsets of each
-contained resource.
-
 ### Resources from multiple origins in a package {#multiple-origins}
 
 A package from origin `A` can contain resources from origin `B`
@@ -602,11 +718,6 @@ Obsolete cryptographic algorithms can be replaced.
 
 Planning to upgrade the cryptography also means we should include some way to
 know when it's safe to remove old cryptography ({{crypto-removal}}).
-
-### Unsigned content {#unsigned-content}
-
-Alex can create their own package without a CA-signed
-certificate, and Bailey can view the content of the package.
 
 ### Certificate revocation {#revocation}
 
@@ -641,15 +752,6 @@ implement incorrectly. For example:
   [Langley's Law](https://blog.gerv.net/2016/09/introducing-deliberate-protocol-errors-langleys-law/) when
   possible makes it hard to deploy incorrect implementations.
 
-
-## Nice to have {#nice-to-have-reqs}
-
-### Streamed loading {#streamed-loading}
-
-The browser can load a package as it downloads.
-
-This conflicts with ZIP, since ZIP's index is at the end.
-
 ### Signing without origin trust {#non-origin-signatures}
 
 It's possible to sign a resource with a key that has some effect on trust other
@@ -677,12 +779,6 @@ sub-package.
 
 The ecosystem can identify when an obsolete cryptographic algorithm is
 no longer needed and can be removed.
-
-### Compress transfers {#transfer-compression}
-
-Transferring a package over the network takes as few bytes as possible. This is
-an easier problem than {{stored-compression}}{:format="title"} since it doesn't
-have to preserve {{random-access}}{:format="title"}.
 
 ### Compress stored packages {#stored-compression}
 
@@ -730,96 +826,3 @@ When a web page inside a package registers a Service Worker, that Service
 Worker's `install` event should receive a reference to the full package, with a
 way to copy the package's contents into a `Cache` object.
 ({{ServiceWorkers}})
-
-# Non-goals
-
-Some features often come along with packaging and signing, and it's
-important to explicitly note that they don't appear in the list of
-{{requirements}}{:format="title"}.
-
-## Store confidential data {#confidential}
-
-Packages are designed to hold public information and to be shared to
-people with whom the original publisher never has an interactive
-connection. In that situation, there's no way to keep the contents
-confidential: even if they were encrypted, to make the data public,
-anyone would have to be able to get the decryption key.
-
-It's possible to maintain something similar to confidentiality for
-non-public packaged data, but doing so complicates the format design
-and can give users a false sense of security.
-
-We believe we'll cause fewer privacy breaches if we omit any mechanism
-for encrypting data, than if we include something and try to teach
-people when it's unsafe to use.
-
-## Generate packages on the fly {#streamed-generation}
-
-See discussion at [WICG/webpackage#6](https://github.com/WICG/webpackage/issues/6#issuecomment-275746125).
-
-## Non-origin identity {#non-origin-identity}
-
-A package can be primarily identified as coming from something other
-than a
-[Web Origin](https://html.spec.whatwg.org/multipage/browsers.html#concept-origin).
-
-## DRM {#drm}
-
-Special support for blocking access to downloaded content based on
-licensing. Note that DRM systems can be shipped inside the package
-even if the packaging format doesn't specifically support them.
-
-## Ergonomic replacement for HTTP/2 PUSH {#push-replacement}
-
-HTTP/2 PUSH ({{?RFC7540}}, section 8.2) is hard for developers to configure, and
-an explicit package format might be easier. However, experts in this area
-believe we should focus on improving PUSH directly instead of routing around it
-with a bundling format.
-
-Trying to bundle resources in order to speed up page loads has a long history,
-including
-[Resource Packages](https://www.mnot.net/blog/2010/02/18/resource_packages) from
-2010 and
-the
-[W3C TAG's packaging proposal](https://w3ctag.github.io/packaging-on-the-web/)
-from 2015.
-
-However, the HTTPWG is doing a lot of work to let servers optimize the PUSHed
-data, and packaging would either have to re-do that or accept lower performance.
-For example:
-
-* {{?I-D.vkrasnov-h2-compression-dictionaries}} should allow individual small
-  resources to be compressed as well as they would be in a bundle.
-* {{?I-D.ietf-httpbis-cache-digest}} tells the server which resources it doesn't
-  need to PUSH.
-
-Associated requirements:
-
-* {{streamed-loading}}{:format="title"}: If the whole package has to be
-  downloaded before the browser can load a piece, this will definitely be slower
-  than PUSH.
-* {{transfer-compression}}{:format="title"}: Keep up with
-  {{?I-D.vkrasnov-h2-compression-dictionaries}}.
-* {{urls}}{:format="title"}: Resources on the web are addressed by URL.
-* {{request-headers}}{:format="title"}:
-  [PUSH_PROMISE](http://httpwg.org/specs/rfc7540.html#PUSH_PROMISE)
-  ({{?RFC7540}}, section 6.6) includes request headers.
-* {{response-headers}}{:format="title"}: PUSHed resources include their response
-  headers.
-
-# Security Considerations
-
-The security considerations will depend on the solution designed to satisfy the
-above requirements. See {{?I-D.yasskin-dispatch-web-packaging}} for one possible
-set of security considerations.
-
-# IANA Considerations
-
-This document has no actions for IANA.
-
---- back
-
-# Acknowledgements
-
-Thanks to Yoav Weiss for the Subresource bundling use case and discussions about
-content distributors.
