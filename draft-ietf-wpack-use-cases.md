@@ -76,15 +76,14 @@ listed, but they're not primary.
 
 # Use cases
 
-The initial use case that we want to focus on is {{bundling}}{:format="title"},
-as it will allow Web authors to serve different common scenarios while not needing
-a large number of requirements (and none with potential negative side effects
-on the Web platform).
+These use cases are in rough descending priority order. If use cases
+have conflicting requirements, the design should enable more important
+use cases.
 
-Other use cases that have been proposed are listed in the appendix, along with
-the additional requirements to support them.
+Other possible use cases are listed in the {{appendix}}{:format="title"},
+along with the additional requirements to support them.
 
-### Subresource bundling {#bundling}
+## Subresource bundling {#bundling}
 
 Text based subresources often benefit from improved compression ratios when
 bundled together.
@@ -113,14 +112,34 @@ or perhaps with {{?I-D.ietf-httpbis-cache-digest}}.
 Associated requirements:
 
 * {{urls}}{:format="title"}
-* {{streamed-loading}}{:format="title"}: To solve downside 1.
-* {{transfer-compression}}{:format="title"}: To keep the upside.
 * {{response-headers}}{:format="title"}: At least the Content-Type is needed to
   load JS and CSS.
-* {{unsigned-content}}{:format="title"}: Signing same-origin content wastes
-  space.
 * {{random-access}}{:format="title"}: To avoid needing a long linear scan before
   using the content.
+* {{unsigned-content}}{:format="title"}: Signing same-origin content wastes
+  space.
+* {{streamed-loading}}{:format="title"}: To solve downside 1.
+* {{transfer-compression}}{:format="title"}: To keep the upside.
+* {{binary}}{:format="title"}: Bundles may be stored in version control systems,
+  and furthermore they are not expected to be created or read manually.
+
+Optional requirements:
+
+* {{request-headers}}{:format="title"}: Content negotiation may optionally
+  happen on the client side, after the bundle has been received.
+  In that case, the `accept*` headers would be important for selecting
+  which specific resource to use at each URL contained in the bundle.
+
+### Packages in version control {#version-control}
+
+Once packages are generated, they should be stored in version control. Many
+popular VC systems auto-detect text files in order to "fix" their line endings.
+If the first bytes of a package look like text, while later bytes store binary
+data, VC may break the package.
+
+Associated requirements:
+
+* {{binary}}{:format="title"}
 
 # Requirements {#requirements}
 
@@ -129,13 +148,19 @@ Associated requirements:
 Resources should be keyed by URLs, matching how browsers look
 resources up over HTTP.
 
-## Random access {#random-access}
+### Request headers {#request-headers}
 
-When a package is stored on disk, the browser can access
-arbitrary resources without a linear scan.
+Resource keys should include request headers like `accept` and
+`accept-language`, which allows content-negotiated resources to be
+represented.
 
-{{MHTML}} would need to be extended with an index of the byte offsets of each
-contained resource.
+This would require an extension to {{MHTML}}, which uses the `content-location`
+response header to encode the requested URL, but has no way to encode other
+request headers. MHTML also has no instructions for handling multiple resources
+with the same `content-location`.
+
+This also requires an extension to {{ZIP}}: we'd need to encode the request
+headers into ZIP's filename fields.
 
 ## Response headers {#response-headers}
 
@@ -145,6 +170,14 @@ Resources should include their HTTP response headers, like
 
 This requires an extension to {{ZIP}}: we'd need something like {{JAR}}'s
 `META-INF` directory to hold extra metadata beyond the resource's body.
+
+## Random access {#random-access}
+
+When a package is stored on disk, the browser can access
+arbitrary resources without a linear scan.
+
+{{MHTML}} would need to be extended with an index of the byte offsets of each
+contained resource.
 
 ## Unsigned content {#unsigned-content}
 
@@ -156,6 +189,13 @@ certificate, and Bailey can view the content of the package.
 The browser can load a package as it downloads.
 
 This conflicts with ZIP, since ZIP's index is at the end.
+
+### Binary {#binary}
+
+The format is identified as binary by tools that might try to "fix"
+line endings.
+
+This conflicts with using an {{MHTML}}-based format.
 
 ## Compress transfers {#transfer-compression}
 
@@ -256,7 +296,7 @@ This document has no actions for IANA.
 Thanks to Yoav Weiss for the Subresource bundling use case and discussions about
 content distributors.
 
-# Appendix
+# Appendix {#appendix}
 
 ## Additional use cases
 
@@ -638,16 +678,6 @@ Associated requirements:
 
 * {{trailing-length}}{:format="title"}
 
-### Packages in version control {#version-control}
-
-Once packages are generated, they should be stored in version control. Many
-popular VC systems auto-detect text files in order to "fix" their line endings.
-If the first bytes of a package look like text, while later bytes store binary
-data, VC may break the package.
-
-Associated requirements:
-
-* {{binary}}{:format="title"}
 
 ### Archival {#archival}
 
@@ -674,20 +704,6 @@ Associated requirements:
 * {{timeshifting}}{:format="title"}
 
 ## Additional requirements
-
-### Request headers {#request-headers}
-
-Resource keys should include request headers like `accept` and
-`accept-language`, which allows content-negotiated resources to be
-represented.
-
-This would require an extension to {{MHTML}}, which uses the `content-location`
-response header to encode the requested URL, but has no way to encode other
-request headers. MHTML also has no instructions for handling multiple resources
-with the same `content-location`.
-
-This also requires an extension to {{ZIP}}: we'd need to encode the request
-headers into ZIP's filename fields.
 
 ### Signing as an origin {#signing}
 
@@ -761,13 +777,6 @@ expressed as raw public keys or as certificates with other key usages.
 ### Additional signatures {#additional-signatures}
 
 Third-parties can vouch for packages by signing them.
-
-### Binary {#binary}
-
-The format is identified as binary by tools that might try to "fix"
-line endings.
-
-This conflicts with using an {{MHTML}}-based format.
 
 ### Deduplication of diamond dependencies {#deduplication}
 
