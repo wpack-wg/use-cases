@@ -112,14 +112,14 @@ or perhaps with {{?I-D.ietf-httpbis-cache-digest}}.
 Associated requirements:
 
 * {{urls}}{:format="title"}
-* {{response-headers}}{:format="title"}: At least the Content-Type is needed to
-  load JS and CSS.
-* {{random-access}}{:format="title"}: To avoid needing a long linear scan before
-  using the content.
-* {{unsigned-content}}{:format="title"}: Signing same-origin content wastes
-  space.
 * {{streamed-loading}}{:format="title"}: To solve downside 1.
 * {{transfer-compression}}{:format="title"}: To keep the upside.
+* {{response-headers}}{:format="title"}: At least the Content-Type is needed to
+  load JS and CSS.
+* {{unsigned-content}}{:format="title"}: Signing same-origin content wastes
+  space.
+* {{random-access}}{:format="title"}: To avoid needing a long linear scan before
+  using the content.
 * {{binary}}{:format="title"}: Bundles may be stored in version control systems,
   and furthermore they are not expected to be created or read manually.
 
