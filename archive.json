@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-10-26T00:38:54.425562+00:00",
+  "timestamp": "2021-12-19T00:46:02.735865+00:00",
   "repo": "wpack-wg/use-cases",
   "labels": [
     {
@@ -102,6 +102,32 @@
           "updatedAt": "2021-10-25T02:13:39Z"
         }
       ],
+      "reviews": []
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOGQepIc4v7IKo",
+      "title": "Initial reprioritization of use cases",
+      "url": "https://github.com/wpack-wg/use-cases/pull/3",
+      "state": "OPEN",
+      "author": "felipeerias",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "As discussed in the WPACK group, I have been working to move the controversial use cases to an informative appendix.\r\n\r\nThis first PR only moves some sections without changing their contents. Later on, we can have more specific PRs to rewrite some of those sections.\r\n\r\nOne of the main concerns about the Web Bundles proposal has been whether it could allow an origin to act on behalf of another without a client ever contacting the authoritative server. Therefore. my (very rough) initial approach has been to move to the Appendix those uses cases that required signing and/or that called for putting content from different origins inside a bundle.\r\n\r\nThis affected some use cases that are useful and not really controversial by themselves (e.g. saving a local copy of a website); in following PRs we can update their contents and move them to the main Use Cases section.",
+      "createdAt": "2021-12-16T02:45:15Z",
+      "updatedAt": "2021-12-16T02:45:15Z",
+      "baseRepository": "wpack-wg/use-cases",
+      "baseRefName": "main",
+      "baseRefOid": "7e8d3d77ad264aa7f6c84a3f1353ae8b69991dca",
+      "headRepository": "felipeerias/use-cases",
+      "headRefName": "reprioritization",
+      "headRefOid": "a283473b469189ba01cf21b6e5e440fed40b9833",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
       "reviews": []
     }
   ]
